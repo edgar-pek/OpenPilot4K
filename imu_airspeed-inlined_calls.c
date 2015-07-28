@@ -35,14 +35,14 @@
 #include <stdlib.h>      // malloc, etc.
 #include "pios_math.h"   // constants, e.g., M_2PI_F
 
-//#include <math.h>        // cosf sinf, etc.
+#include <math.h>        // cosf sinf, etc.
 // [EP] replacing math.h includes
-float sinf(float x) { return 0.0; }
-float asinf(float x) { return 0.0; }
-float cosf(float x) { return 0.0; }
-float tanf(float x) { return 0.0; }
-float fabsf(float x) { return 0.0; }
-float atan2f(float x, float y) { return 0.0; }
+//float fabsf(float x) { return 0.0; }
+//float sinf(float x) { return 0.0; }
+//float asinf(float x) { return 0.0; }
+//float cosf(float x) { return 0.0; }
+//float tanf(float x) { return 0.0; }
+//float atan2f(float x, float y) { return 0.0; }
 
 //#include "imu_airspeed.h"
 //#include "CoordinateConversions.h"
