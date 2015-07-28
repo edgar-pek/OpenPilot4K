@@ -31,10 +31,18 @@
 
 #include <stdio.h>       // [DEBUG] - printf, etc.
 #include <stdint.h>      // int32_t, uint32_t, etc.
-#include <math.h>        // cosf sinf, etc.
 #include <stdbool.h>     // the bool type
 #include <stdlib.h>      // malloc, etc.
 #include "pios_math.h"   // constants, e.g., M_2PI_F
+
+//#include <math.h>        // cosf sinf, etc.
+// [EP] replacing math.h includes
+float sinf(float x) { return 0.0; }
+float asinf(float x) { return 0.0; }
+float cosf(float x) { return 0.0; }
+float tanf(float x) { return 0.0; }
+float fabsf(float x) { return 0.0; }
+float atan2f(float x, float y) { return 0.0; }
 
 //#include "imu_airspeed.h"
 //#include "CoordinateConversions.h"
@@ -77,13 +85,13 @@ int32_t VelocityStateInitialize(void)
     //return handle ? 0 : -1;
     return 0;
 }
-static inline int32_t VelocityStateGetInit(VelocityStateData *velocity_data) { 
+static int32_t VelocityStateGetInit(VelocityStateData *velocity_data) { 
   velocity_data->North = 10.55643;
   velocity_data->East  = 14.85343;
   velocity_data->Down  = 1.438790;
   return 0; 
 }
-static inline int32_t VelocityStateGet(VelocityStateData *velocity_data) { 
+static  int32_t VelocityStateGet(VelocityStateData *velocity_data) { 
   velocity_data->North = 12.780234;
   velocity_data->East  = 21.810415;
   velocity_data->Down  = 3.724428;
@@ -114,7 +122,7 @@ typedef struct {
 typedef AttitudeStateDataPacked __attribute__((aligned(4))) AttitudeStateData;
     
 /* Typesafe Object access functions */
-static inline int32_t AttitudeStateGetInit(AttitudeStateData *attitude_data) { 
+static  int32_t AttitudeStateGetInit(AttitudeStateData *attitude_data) { 
   //return UAVObjGetData(AttitudeStateHandle(), dataOut); 
   //INIT ATTDATA: q1=0.744896 q2=0.000665 q3=-0.007054 q4=0.667143 Roll=-0.482583 Pitch=-0.652942 Yaw=83.699242 
   attitude_data->q1 = 0.744896;
@@ -126,7 +134,7 @@ static inline int32_t AttitudeStateGetInit(AttitudeStateData *attitude_data) {
   attitude_data->Yaw = 83.699242;
   return 0;
 }
-static inline int32_t AttitudeStateGet(AttitudeStateData *attitude_data) { 
+static  int32_t AttitudeStateGet(AttitudeStateData *attitude_data) { 
   //return UAVObjGetData(AttitudeStateHandle(), dataOut); 
   attitude_data->q1 = 0.783642;
   attitude_data->q2 = 0.272317;
@@ -239,7 +247,7 @@ int32_t AirspeedSettingsInitialize(void)
 }
     
 /* Typesafe Object access functions */
-static inline int32_t AirspeedSettingsGet(AirspeedSettingsData *dataOut) { 
+static  int32_t AirspeedSettingsGet(AirspeedSettingsData *dataOut) { 
   //return UAVObjGetData(AirspeedSettingsHandle(), dataOut); 
   // TODO: init settings
   return 0;
@@ -314,7 +322,7 @@ int32_t AirspeedSensorInitialize(void)
 }
 
 /* Typesafe Object access functions */
-static inline int32_t AirspeedSensorGet(AirspeedSensorData *dataOut) { 
+static  int32_t AirspeedSensorGet(AirspeedSensorData *dataOut) { 
   // return UAVObjGetData(AirspeedSensorHandle(), dataOut); 
   // this is writeonly object
   return 0;
@@ -442,6 +450,7 @@ float FilterButterWorthDF2(const float xn, const struct ButterWorthDF2Filter *fi
 #define pios_malloc(size)         (malloc(size))
 // ----------------------------------------------------------------------------
 
+
 // Private constants
 #define EPS               1e-6f
 #define EPS_REORIENTATION 1e-10f
@@ -477,7 +486,7 @@ static struct IMUGlobals *imu;
 
 // Private functions
 // a simple square inline function based on multiplication faster than powf(x,2.0f)
-static inline float Sq(float x)
+static  float Sq(float x)
 {
     return x * x;
 }
@@ -736,6 +745,7 @@ void harness0(VelocityStateData* velocity_data, AttitudeStateData* attitude_data
 }
 
 int main() {
+  
   VelocityStateData* velocity_data = (VelocityStateData*) malloc(sizeof(VelocityStateData));
   AttitudeStateData* attitude_data = (AttitudeStateData*) malloc(sizeof(AttitudeStateData));
   AirspeedSettingsData* airspeed_settings_data = (AirspeedSettingsData*) malloc(sizeof(AirspeedSettingsData));
@@ -748,4 +758,5 @@ int main() {
   imu_airspeedGet(airspeed_sensor_data, airspeed_settings_data);
   
   printf("DONE. \n");
+  return 0;
 }
