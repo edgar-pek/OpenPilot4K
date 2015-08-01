@@ -85,6 +85,7 @@ int32_t VelocityStateInitialize(void)
     //return handle ? 0 : -1;
     return 0;
 }
+/*
 static int32_t VelocityStateGetInit(VelocityStateData *velocity_data) { 
   velocity_data->North = 10.55643;
   velocity_data->East  = 14.85343;
@@ -97,6 +98,7 @@ static  int32_t VelocityStateGet(VelocityStateData *velocity_data) {
   velocity_data->Down  = 3.724428;
   return 0; 
 }
+*/
 
 // ----------------------------------------------------------------------------
 //#include "attitudestate.h"
@@ -122,6 +124,7 @@ typedef struct {
 typedef AttitudeStateDataPacked __attribute__((aligned(4))) AttitudeStateData;
     
 /* Typesafe Object access functions */
+/*
 static  int32_t AttitudeStateGetInit(AttitudeStateData *attitude_data) { 
   //return UAVObjGetData(AttitudeStateHandle(), dataOut); 
   //INIT ATTDATA: q1=0.744896 q2=0.000665 q3=-0.007054 q4=0.667143 Roll=-0.482583 Pitch=-0.652942 Yaw=83.699242 
@@ -145,7 +148,7 @@ static  int32_t AttitudeStateGet(AttitudeStateData *attitude_data) {
   attitude_data->Yaw = 58.856155;
   return 0;
 }
-
+*/
 /**
  * Initialize object.
  * \return 0 Success
@@ -522,6 +525,7 @@ static void Quaternion2PY(const float q0, const float q1, const float q2, const 
     }
 }
 
+// computes fuselage vector from pitch and yaw parameters
 static void PY2xB(const float p, const float y, float x[3])
 {
     const float cosp = cosf(p);
@@ -532,6 +536,7 @@ static void PY2xB(const float p, const float y, float x[3])
 }
 
 
+// computes delta fuselage vector
 static void PY2DeltaxB(const float p, const float y, const float xB[3], float x[3])
 {
     const float cosp = cosf(p);
@@ -608,6 +613,7 @@ void imu_airspeedInitialize(const AirspeedSettingsData *airspeedSettings)
  */
 
 void imu_airspeedGet(AirspeedSensorData *airspeedData, const AirspeedSettingsData *airspeedSettings)
+    // ensures airspeedData->speed == f(vector(imu->Vw), vector(imu->vOld), attData, velData)
 {
     // pre-filter frequency rate
     const float ff  = (float)(airspeedSettings->SamplePeriod) / 1000.0f / airspeedSettings->IMUBasedEstimationLowPassPeriod1;
@@ -648,14 +654,26 @@ void imu_airspeedGet(AirspeedSensorData *airspeedData, const AirspeedSettingsDat
         // get pitch and roll Euler angles from quaternion
         // do not calculate the principlal argument of yaw, i.e. use old yaw to add multiples of 2pi to have a continuous yaw
         Quaternion2PY(attData.q1, attData.q2, attData.q3, attData.q4, &p, &y, false);
+        // ensures  p == f(imu->pOld, attData), y == f(imu->yOld, attData)
 
         // filter pitch and roll Euler angles instead of fuselage vector to guarantee a unit length at all times
         p = FilterButterWorthDF2(p, &(imu->prefilter), &(imu->pn1), &(imu->pn2));
+        // ensures p == f'(\old(p), imu)
         y = FilterButterWorthDF2(y, &(imu->prefilter), &(imu->yn1), &(imu->yn2));
+        // ensures y == f'(\old(y), imu)
+
+        // ********************************************************************
+        //  COMPUTING FUSELAGE VECTOR xB
         // transform pitch and yaw into fuselage vector xB and xBold
+        // * requires ?
         PY2xB(p, y, xB);
+        // * ensures xB == (cosf(p) * cosf(y), cosf(p) * sinf(y), -sinf(p))
+
+
         // calculate change in fuselage vector by substraction of old value
+        // * requires ?
         PY2DeltaxB(imu->pOld, imu->yOld, xB, dxB);
+        // * ensures dxB == f(imu->pOld, imu->yOld, xB)
 
         // filter ground speed from VelocityState
         const float fv1n = FilterButterWorthDF2(velData.North, &(imu->prefilter), &(imu->v1n1), &(imu->v1n2));
